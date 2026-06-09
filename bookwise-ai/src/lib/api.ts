@@ -1,5 +1,4 @@
-const API_BASE_URL = "https://bookwise-ai-s7zq.onrender.com";
-
+const API_BASE_URL = "import.meta.env.VITE_API_URL
 export interface Book {
   id: string;
   title: string;
