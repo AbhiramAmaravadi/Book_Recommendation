@@ -7,7 +7,7 @@ export const Route = createFileRoute("/library")({
 });
 
 function LibraryPage() {
-  const { entries } = useLibrary();
+  const { entries, remove } = useLibrary();
 
   const books = Object.values(entries);
 
@@ -24,10 +24,21 @@ function LibraryPage() {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
           {books.map((entry) => (
-            <BookCard
+            <div
               key={entry.book.id}
-              book={entry.book}
-            />
+              className="relative"
+            >
+              <button
+                onClick={() => remove(entry.book.id)}
+                className="absolute top-2 right-2 z-10 bg-red-500 text-white px-2 py-1 rounded text-xs"
+              >
+                Remove
+              </button>
+
+              <BookCard
+                book={entry.book}
+              />
+            </div>
           ))}
         </div>
       )}

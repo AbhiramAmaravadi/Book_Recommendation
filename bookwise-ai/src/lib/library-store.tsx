@@ -30,15 +30,13 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
   const [entries, setEntries] = useState<Record<string, LibraryEntry>>({});
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      try { setEntries(JSON.parse(raw)); } catch {}
-    } else {
-      // seed with a few books so dashboard feels alive
-      setEntries({});
-    }
-  }, []);
+  if (typeof window === "undefined") return;
+
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(entries)
+  );
+}, [entries]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
