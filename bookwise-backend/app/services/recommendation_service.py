@@ -21,23 +21,15 @@ class RecommendationService:
         corpus = []
 
         for book in books:
-            text = f"""
-            {book.title}
-            {book.author}
-            {book.publisher}
-            """
-
-            corpus.append(text)
+            corpus.append(
+                f"{book.title} {book.author} {book.publisher}"
+            )
 
         vectorizer = TfidfVectorizer(
             stop_words="english"
         )
 
         tfidf_matrix = vectorizer.fit_transform(corpus)
-
-        similarity_matrix = cosine_similarity(
-            tfidf_matrix
-        )
 
         selected_indexes = []
 
@@ -48,16 +40,21 @@ class RecommendationService:
         if not selected_indexes:
             return []
 
+        # Only compare selected books against all books
+        selected_vectors = tfidf_matrix[selected_indexes]
+
+        similarities = cosine_similarity(
+            selected_vectors,
+            tfidf_matrix
+        )
+
         scores = {}
-        counts = {}
 
-        for idx in selected_indexes:
+        for row in similarities:
 
-            similarities = similarity_matrix[idx]
+            for book_idx, score in enumerate(row):
 
-            for book_idx, score in enumerate(similarities):
-
-                if book_idx == idx:
+                if str(books[book_idx].id) in book_ids:
                     continue
 
                 scores[book_idx] = (
@@ -65,15 +62,9 @@ class RecommendationService:
                     + float(score)
                 )
 
-                counts[book_idx] = (
-                    counts.get(book_idx, 0)
-                    + 1
-                )
-
-        # Average scores so they stay between 0 and 1
         for book_idx in scores:
             scores[book_idx] = (
-                scores[book_idx] / counts[book_idx]
+                scores[book_idx] / len(selected_indexes)
             )
 
         recommendations = []
@@ -84,17 +75,13 @@ class RecommendationService:
             reverse=True
         ):
 
-            # Never recommend books already selected
-            if str(books[idx].id) in book_ids:
-                continue
-
             recommendations.append(
                 {
                     "id": str(books[idx].id),
                     "title": books[idx].title,
                     "author": books[idx].author,
                     "average_rating": books[idx].average_rating,
-                    "score": min(round(score, 4), 1.0)
+                    "score": round(score, 4)
                 }
             )
 
